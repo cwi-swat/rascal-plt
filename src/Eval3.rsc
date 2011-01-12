@@ -33,16 +33,24 @@ public Result eval(str main, list[int] args, Prog prog) {
   penv = ( f.name: f | f <- prog.funcs );
   f = penv[main];
   mem = [];
-  env = ();
-  for (i <- domain(f.formals)) {
-    <mem, a> = alloc(mem, args[i]);
-    env[f.formals[i]] = a;
-  }
+  <mem, env> = bind(f.formals, args, mem); 
   println("env = <env>");
   return eval(f.body, env, penv, mem);
 }
 
+public tuple[Mem, Env] bind(list[str] fs, list[int] args, Mem mem) {
+  env = ();
+  for (i <- domain(fs)) {
+    <mem, a> = alloc(mem, args[i]);
+    env[fs[i]] = a;
+  }
+  return <mem, env>;
+}
+
 public Result eval(Exp exp, Env env, PEnv penv, Mem mem) {
+  //println("exp = <exp>");
+  //println("env = <env>");
+  //println("mem = <mem>");
   switch (exp) {
     case nat(int nat):
        return <mem, nat>;
@@ -107,13 +115,12 @@ public Result eval(Exp exp, Env env, PEnv penv, Mem mem) {
     case call(str name, list[Exp] args): {
        f = penv[name];
        scope = push(mem);
-       newEnv = ();
-       for (i <- domain(f.formals)) {
-         <mem, v>  = eval(args[i], env, penv, mem);
-         <mem, a> = alloc(mem, v);
-         newEnv[f.formals[i]] = a;
+       vs = for (a <- args) {
+         <mem, v> = eval(a, env, penv, mem);
+         append v;
        }
-       <mem, v> = eval(f.body, newEnv, penv, mem);
+       <mem, env> = bind(f.formals, vs, mem);
+       <mem, v> = eval(f.body, env, penv, mem);
        return <pop(mem, scope), v>; 
     }
         
