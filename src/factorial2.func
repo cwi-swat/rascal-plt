@@ -1,11 +1,7 @@
 fact(n) = 
- let
-    x = 1
-  in
     if n <= 1 then 
-      x := 1
+      n := 1
     else 
-      x := n * fact(n-1)
+      n := n * fact(n-1)
     end;
-    x
-  end
+    n

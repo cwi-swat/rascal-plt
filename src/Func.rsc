@@ -42,8 +42,10 @@ syntax Exp = let: "let" {Binding ","}* "in" Exp "end"
              | non-assoc leq:  Exp "\<=" Exp
            )
            >
-           assign: Exp ":=" Exp
+           right assign: Exp ":=" Exp
            >
            right seq: Exp ";" Exp; 
+
+
 
 syntax Binding = binding: Ident "=" Exp;

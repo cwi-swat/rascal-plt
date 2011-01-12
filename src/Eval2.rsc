@@ -7,12 +7,12 @@ import AST;
 import List;
 import IO;
 
-alias Env = map[str, value];
+alias Env = map[str, int];
 alias PEnv = map[str, Func];
 
-alias Result = tuple[Env, value];
+alias Result = tuple[Env, int];
 
-public Result eval(str main, list[value] args, Prog prog) {
+public Result eval(str main, list[int] args, Prog prog) {
   penv = ( f.name: f | f <- prog.funcs );
   f = penv[main];
   env = ( f.formals[i] : args[i] | i <- domain(f.formals) ); 
@@ -25,60 +25,59 @@ public Result eval(Exp exp, Env env, PEnv penv) {
        return <env, nat>;
  
     case var(str name):
-       return <env, env[name]>;
-       
+       return <env, env[name]>;       
        
     case mul(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) * asInt(y)>;
+      return <env, x * y>;
     } 
       
     case div(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) / asInt(y)>;
+      return <env, x / y>;
     } 
       
     case add(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) + asInt(y)>;
+      return <env, x + y>;
     } 
       
     case min(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) - asInt(y)>;
+      return <env, x - y>;
     } 
       
     case gt(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) > asInt(y)>;
+      return <env, (x > y) ? 1 : 0>;
     } 
       
     case lt(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) < asInt(y)>;
+      return <env, (x < y) ? 1 : 0>;
     } 
       
     case geq(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) >= asInt(y)>;
+      return <env, (x >= y) ? 1 : 0>;
     } 
       
     case leq(Exp lhs, Exp rhs): {
       <env, x> = eval(lhs, env, penv);
       <env, y> = eval(rhs, env, penv);
-      return <env, asInt(x) <= asInt(y)>;
+      return <env, (x <= y) ? 1 : 0>;
     } 
   
     case cond(Exp cond, Exp then, Exp otherwise): {
       <env, c> = eval(cond, env, penv);
-      return asBool(c) ? eval(then, env, penv) : eval(otherwise, env, penv);
+      return (c != 0) ? eval(then, env, penv) : eval(otherwise, env, penv);
     }
       
     case call(str name, list[Exp] args): {
@@ -115,12 +114,3 @@ public Result eval(Exp exp, Env env, PEnv penv) {
 }
 
 
-public int asInt(value x) {
-  if (int n := x) return n;
-  throw "Not an int: <x>";
-}
-
-public bool asBool(value x) {
-  if (bool b := x) return b;
-  throw "Not a bool: <x>";
-}
